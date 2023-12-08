@@ -47,8 +47,8 @@ if is_flash_attn_available():
     from flash_attn import flash_attn_func, flash_attn_varlen_func
     from flash_attn.bert_padding import index_first_axis, pad_input, unpad_input  # noqa
 
-from lib.linear.quantized_linear import QuantizedLinear  
-from lib import codebook
+from lib.linear.quantized_linear import QuantizedLinear
+from .version import check_model_version
 
 logger = logging.get_logger(__name__)
 
@@ -228,7 +228,10 @@ class LlamaMLP(nn.Module):
         self.upgate_proj = QuantizedLinear(self.hidden_size,
                                            self.intermediate_size * 2,
                                            config.quip_params['codesz'],
+                                           config.quip_params.get('packsz', 1),
+                                           config.quip_params.get('pack_out', False),
                                            config.quip_params['idx_dtype'],
+                                           config.quip_params.get('codebook_version', 0),
                                            rank=config.quip_params['lora_rank'],
                                            rescale_WH=config.quip_params['rescale_WH'])
         self.down_proj = QuantizedLinear(
@@ -236,7 +239,10 @@ class LlamaMLP(nn.Module):
             self.config.quip_params['outlier_channel_split'] else self.intermediate_size,
             self.hidden_size,
             config.quip_params['codesz'],
+            config.quip_params.get('packsz', 1),
+            config.quip_params.get('pack_out', False),
             config.quip_params['idx_dtype'],
+            config.quip_params.get('codebook_version', 0),
             outlier_channel_split=self.config.quip_params['outlier_channel_split'],
             rank=self.config.quip_params['lora_rank'],
             rescale_WH=self.config.quip_params['rescale_WH'])
@@ -296,14 +302,20 @@ class LlamaAttention(nn.Module):
             (self.num_key_value_heads * self.head_dim) +
             (self.num_key_value_heads * self.head_dim),
             config.quip_params['codesz'],
+            config.quip_params.get('packsz', 1),
+            config.quip_params.get('pack_out', False),
             config.quip_params['idx_dtype'],
+            config.quip_params.get('codebook_version', 0),
             rank=config.quip_params['lora_rank'],
             rescale_WH=config.quip_params['rescale_WH'])
 
         self.o_proj = QuantizedLinear(self.num_heads * self.head_dim,
                                       self.hidden_size,
                                       config.quip_params['codesz'],
+                                      config.quip_params.get('packsz', 1),
+                                      config.quip_params.get('pack_out', False),
                                       config.quip_params['idx_dtype'],
+                                      config.quip_params.get('codebook_version', 0),
                                       rank=config.quip_params['lora_rank'],
                                       rescale_WH=config.quip_params['rescale_WH'])
 
@@ -725,6 +737,7 @@ class LlamaPreTrainedModel(PreTrainedModel):
     _supports_flash_attn_2 = True
 
     def _init_weights(self, module):
+        check_model_version(self.config.quip_params.get('model_version', 0))
         std = self.config.initializer_range
         if isinstance(module, nn.Linear):
             module.weight.data.normal_(mean=0.0, std=std)

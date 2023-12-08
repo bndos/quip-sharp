@@ -4,7 +4,6 @@ import json
 import argparse
 import torch
 import datasets
-from transformers import LlamaTokenizer, LlamaConfig
 from lib.utils import gptq_data_utils
 from lib.utils.unsafe_import import model_from_hf_path
 import random
@@ -36,7 +35,8 @@ def main(args):
         nsamples = input_tok.numel() // args.seqlen
         input_tok = input_tok[0, :(args.seqlen * nsamples)].view(nsamples, args.seqlen)
 
-        model.reset()
+        if not args.no_use_cuda_graph:
+            model.reset()
 
         loss_fct = torch.nn.CrossEntropyLoss().cuda()
         acc_loss = 0.0

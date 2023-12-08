@@ -3,11 +3,12 @@ import json
 import argparse
 import torch
 import datasets
-from transformers import LlamaTokenizer
+from transformers import AutoTokenizer
 import random
 import glog
 
-from lib.utils import LMEvalAdaptor, model_from_hf_path
+from lib.utils import LMEvalAdaptor
+from lib.utils.unsafe_import import model_from_hf_path
 from lm_eval import evaluator, tasks
 
 parser = argparse.ArgumentParser()
@@ -23,9 +24,9 @@ parser.add_argument('--no_use_flash_attn', action='store_true')
 
 def main(args):
     model, model_str = model_from_hf_path(args.hf_path,
-                                          use_cuda_graph=not args.no_use_cuda_graph,
+                                          use_cuda_graph=False,
                                           use_flash_attn=not args.no_use_flash_attn)
-    tokenizer = LlamaTokenizer.from_pretrained(model_str)
+    tokenizer = AutoTokenizer.from_pretrained(model_str)
 
     glog.info('loaded model!')
     tokenizer.pad_token = tokenizer.eos_token
