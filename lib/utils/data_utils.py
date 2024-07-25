@@ -57,7 +57,7 @@ def wrap_tokenizer(tokenizer, x, ctx_size):
 
 def sample_rp1t(tokenizer, size=128, ctx_size=2048, nproc=1):
     dataset = load_dataset('togethercomputer/RedPajama-Data-1T-Sample',
-                           split='train')
+                           split='train', trust_remote_code=True)
     devset = torch.zeros((size, ctx_size), dtype=torch.int64)
     saved = 0
     if nproc > 1:
