@@ -1,13 +1,13 @@
 import multiprocessing as mp
 
-import glog
+# import glog
 import torch
 from datasets import load_dataset
 from torch.utils.data import DataLoader, Dataset
 
-from lib import codebook
+# from lib import codebook
 
-from .matmul_had import matmul_hadU
+# from .matmul_had import matmul_hadU
 
 
 def flat_to_sym(V, N):
@@ -60,6 +60,7 @@ def sample_rp1t(tokenizer, size=128, ctx_size=2048, nproc=1):
                            split='train', trust_remote_code=True)
     devset = torch.zeros((size, ctx_size), dtype=torch.int64)
     saved = 0
+    print(f'sampling {size} sequences, each with length {ctx_size}, {nproc} processes')
     if nproc > 1:
         p = mp.Pool(nproc)
         while saved < size:
