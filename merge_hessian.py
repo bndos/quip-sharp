@@ -2,11 +2,11 @@ import torch
 import os
 
 # Example usage
-base_dir = "./Meta-Llama-3-70B-"
-num_groups = 4
-save_dir = "//Meta-Llama-3-70B/" 
+base_dir = "./Hessians-Llama-31-70B-Instruct-6144-8k-seed-"
+groups = [0, 1, 2, 3]
+save_dir = "./Hessians-Llama-31-70B-Instruct-6144-8k" 
 
-def merge_and_save_hessian(data, num_groups, save_dir):
+def merge_and_save_hessian(data, groups, save_dir):
     """
     Merges Hessian components across multiple groups and saves the merged result.
 
@@ -22,9 +22,10 @@ def merge_and_save_hessian(data, num_groups, save_dir):
     total_flatH = None
     total_mu = None
     total_ct = 0
-
+    num_groups = len(groups)
     # Load and sum the data from all groups
-    for group in range(num_groups):
+    # for group in range(num_groups):
+    for group in groups:
         full_path = os.path.join(f'{base_dir}{group}', entry)
         data = torch.load(full_path)
 
@@ -56,10 +57,11 @@ def merge_and_save_hessian(data, num_groups, save_dir):
 
 for entry in os.listdir(f'{base_dir}0'):
     data = {}
-    for group in range(0, num_groups):
+    for group in groups:
+    # for group in range(0, num_groups):
         full_path = os.path.join(f'{base_dir}{group}', entry) 
         print(full_path)
         data[group] = torch.load(full_path)
-    merge_and_save_hessian(data, num_groups, save_dir)
+    merge_and_save_hessian(data, groups, save_dir)
     # exit()
     print('----')
