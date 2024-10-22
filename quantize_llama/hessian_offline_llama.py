@@ -130,7 +130,8 @@ def main(args):
     print("loading model...")
     model = AutoModelForCausalLM.from_pretrained(args.base_model,
                                                  torch_dtype="auto",
-                                                 low_cpu_mem_usage=True)
+                                                 low_cpu_mem_usage=True,
+                                                 trust_remote_code=True,)
     print("loaded model!")
     tokenizer = AutoTokenizer.from_pretrained(args.base_model, use_fast=True)
     tokenizer.pad_token = tokenizer.eos_token
